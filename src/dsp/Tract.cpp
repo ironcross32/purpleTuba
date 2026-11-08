@@ -178,7 +178,7 @@ void Tract::calculateReflections() noexcept
     for (int i = 1; i < n; ++i)
     {
         reflection[(size_t) i] = newReflection[(size_t) i];
-        if (A[(size_t) i] == 0)
+        if (A[(size_t) i] <= 0.0) // A is a square, so this means exactly zero
             newReflection[(size_t) i] = 0.999; // to prevent some bad behaviour if 0
         else
             newReflection[(size_t) i] = (A[(size_t) i - 1] - A[(size_t) i]) / (A[(size_t) i - 1] + A[(size_t) i]);
@@ -299,7 +299,7 @@ void Tract::addTurbulenceNoise (double turbulenceNoise, double noiseModulator) n
         const auto& t = turbulence[(size_t) j];
         if (t.index < 2 || t.index > n) continue;
         if (t.diameter <= 0) continue;
-        if (t.intensity == 0) continue;
+        if (t.intensity <= 0.0) continue;
         addTurbulenceNoiseAtIndex (0.66 * turbulenceNoise * t.intensity * noiseModulator, t.index, t.diameter);
     }
 }

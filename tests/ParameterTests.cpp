@@ -2,6 +2,7 @@
 
 #include "PluginProcessor.h"
 
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 #include <set>
@@ -94,7 +95,7 @@ TEST_CASE ("Value text parses back to (about) the same value", "[params]")
 
     CHECK_FALSE (parseValue (paramInfo (ParamId::pitch), "loud").has_value());
     CHECK (*parseValue (paramInfo (ParamId::glide), "1.5 s") == 1.5f);
-    CHECK (*parseValue (paramInfo (ParamId::glide), "200 ms") == 0.2f);
+    CHECK (*parseValue (paramInfo (ParamId::glide), "200 ms") == Catch::Approx (0.2f));
     CHECK (*parseValue (paramInfo (ParamId::tenseness), "250") == 1.0f); // clamped
 }
 

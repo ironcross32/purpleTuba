@@ -10,18 +10,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # `jobs` caps parallel compiles. A bare --parallel means unlimited `make -j`, and JUCE's
+        # huge module files (compiled for two architectures on macOS) then exhaust the runner's
+        # memory and the build crawls. macOS runners have 3 cores / 7 GB.
         include:
           - os: windows-latest
+            jobs: 4
             targets: PurpleTuba_VST3 PurpleTuba_CLAP PurpleTuba_Standalone PurpleTubaTests
           - os: macos-latest
+            jobs: 3
             targets: PurpleTuba_VST3 PurpleTuba_CLAP PurpleTuba_AU PurpleTuba_Standalone PurpleTubaTests
           - os: ubuntu-latest
+            jobs: 4
             targets: PurpleTuba_VST3 PurpleTuba_CLAP PurpleTuba_Standalone PurpleTubaTests
     runs-on: ${{ matrix.os }}
     name: Build (${{ matrix.os }})
+    # Fail a hung build instead of letting it run to GitHub's 6-hour limit.
+    timeout-minutes: 75
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
 
@@ -31,13 +39,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libasound2-dev libjack-jackd2-dev libfreetype-dev libfontconfig1-dev \
             libx11-dev libxcomposite-dev libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev \
-            libxrender-dev libglu1-mesa-dev mesa-common-dev xvfb
+            libxrender-dev libxi-dev libegl-dev libglu1-mesa-dev mesa-common-dev xvfb
 
       - name: Configure
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
 
       - name: Build
-        run: cmake --build build --config Release --parallel --target ${{ matrix.targets }}
+        run: cmake --build build --config Release --parallel ${{ matrix.jobs }} --target ${{ matrix.targets }}
 
       # Unsigned bundles need at least an ad-hoc signature to load on macOS (and for auval).
       - name: Ad-hoc sign (macOS)
@@ -52,7 +60,7 @@ jobs:
 
       # Upload before testing so the plug-ins are available even if a test fails.
       - name: Upload plug-ins
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: PurpleTuba-${{ runner.os }}
           path: |

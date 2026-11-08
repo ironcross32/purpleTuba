@@ -68,7 +68,7 @@ private:
     void showShortcuts();
     void setParameterFromText (int paramIndex, const juce::String& text);
 
-    PurpleTubaProcessor& processor;
+    PurpleTubaProcessor& tuba;
     theme::LookAndFeel lookAndFeel;
     juce::TooltipWindow tooltipWindow { this, 800 };
 

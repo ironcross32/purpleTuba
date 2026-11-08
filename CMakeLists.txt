@@ -52,7 +52,6 @@ target_compile_definitions(PurpleTuba
         JUCE_WEB_BROWSER=0
         JUCE_USE_CURL=0
         JUCE_VST3_CAN_REPLACE_VST2=0
-        JUCE_DISPLAY_SPLASH_SCREEN=0
         # Hosts send MIDI CCs to VST3 plug-ins only through parameters; JUCE turns
         # them back into MIDI messages so MIDI learn sees them. (This is JUCE's default.)
         JUCE_VST3_EMULATE_MIDI_CC_WITH_PARAMETERS=1

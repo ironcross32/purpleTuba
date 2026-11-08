@@ -20,7 +20,7 @@ namespace
 }
 
 PurpleTubaEditor::PurpleTubaEditor (PurpleTubaProcessor& p)
-    : juce::AudioProcessorEditor (p), processor (p), mappingsList (p.getMidiLearn())
+    : juce::AudioProcessorEditor (p), tuba (p), mappingsList (p.getMidiLearn())
 {
     setLookAndFeel (&lookAndFeel);
     setTitle ("Purple Tuba");
@@ -45,7 +45,7 @@ PurpleTubaEditor::PurpleTubaEditor (PurpleTubaProcessor& p)
     buildParameterGroups();
     buildLearnGroup();
 
-    lastMappingVersion = processor.getMidiLearn().getVersion();
+    lastMappingVersion = tuba.getMidiLearn().getVersion();
     syncLearnState();
 
     setResizable (true, true);
@@ -65,7 +65,7 @@ PurpleTubaEditor::~PurpleTubaEditor()
     stopTimer();
 
     // Leaving learn armed with no editor to report the result would confuse the next session.
-    processor.getMidiLearn().cancel();
+    tuba.getMidiLearn().cancel();
 
     dialog.reset();
     retiredDialog.reset();
@@ -88,13 +88,13 @@ void PurpleTubaEditor::buildParameterGroups()
 
         if (info.kind == ParamKind::toggle)
         {
-            auto toggle = std::make_unique<LearnableToggle> (processor, *this, i);
+            auto toggle = std::make_unique<LearnableToggle> (tuba, *this, i);
             group.addFullWidth (*toggle, ControlGroup::rowHeight);
             controls[(size_t) i] = std::move (toggle);
         }
         else
         {
-            auto slider = std::make_unique<LearnableSlider> (processor, *this, i);
+            auto slider = std::make_unique<LearnableSlider> (tuba, *this, i);
             auto* sliderPtr = slider.get();
             group.addRow (*slider, info.name, true);
 
@@ -140,7 +140,7 @@ void PurpleTubaEditor::buildLearnGroup()
     clearAllButton.setDescription ("Removes every MIDI controller mapping.");
     clearAllButton.onClick = [this]
     {
-        processor.getMidiLearn().clearAll();
+        tuba.getMidiLearn().clearAll();
         refreshMappings();
         announcements.enqueue ("All MIDI mappings cleared.", 1);
     };
@@ -270,7 +270,7 @@ bool PurpleTubaEditor::keyPressed (const juce::KeyPress& key)
         showShortcuts();
         return true;
     }
-    if (key == juce::KeyPress::escapeKey && processor.getMidiLearn().isArmed())
+    if (key == juce::KeyPress::escapeKey && tuba.getMidiLearn().isArmed())
     {
         cancelLearn();
         return true;
@@ -282,7 +282,7 @@ bool PurpleTubaEditor::keyPressed (const juce::KeyPress& key)
 //==============================================================================
 void PurpleTubaEditor::toggleMidiLearn()
 {
-    if (processor.getMidiLearn().isArmed())
+    if (tuba.getMidiLearn().isArmed())
     {
         cancelLearn();
         return;
@@ -299,7 +299,7 @@ void PurpleTubaEditor::toggleMidiLearn()
 
 void PurpleTubaEditor::startLearn (LearnableControl& control)
 {
-    auto& learn = processor.getMidiLearn();
+    auto& learn = tuba.getMidiLearn();
     learn.arm (control.getParamIndex());
     syncLearnState();
 
@@ -311,14 +311,14 @@ void PurpleTubaEditor::startLearn (LearnableControl& control)
 
 void PurpleTubaEditor::cancelLearn()
 {
-    processor.getMidiLearn().cancel();
+    tuba.getMidiLearn().cancel();
     syncLearnState();
     announcements.enqueue ("MIDI learn cancelled.", 1);
 }
 
 void PurpleTubaEditor::syncLearnState()
 {
-    const int armed = processor.getMidiLearn().getArmedParam();
+    const int armed = tuba.getMidiLearn().getArmedParam();
     lastArmedParam = armed;
 
     for (auto& c : controls)
@@ -344,7 +344,7 @@ void PurpleTubaEditor::syncLearnState()
 
 void PurpleTubaEditor::refreshMappings()
 {
-    lastMappingVersion = processor.getMidiLearn().getVersion();
+    lastMappingVersion = tuba.getMidiLearn().getVersion();
     mappingsList.refresh();
     for (auto& c : controls)
         if (c != nullptr)
@@ -353,7 +353,7 @@ void PurpleTubaEditor::refreshMappings()
 
 void PurpleTubaEditor::timerCallback()
 {
-    auto& learn = processor.getMidiLearn();
+    auto& learn = tuba.getMidiLearn();
 
     MidiLearn::LearnEvent event;
     while (learn.popLearnEvent (event))
@@ -410,7 +410,7 @@ void PurpleTubaEditor::moveToGroup (int delta)
 //==============================================================================
 void PurpleTubaEditor::showControlMenu (LearnableControl& control)
 {
-    auto& learn = processor.getMidiLearn();
+    auto& learn = tuba.getMidiLearn();
     const int index = control.getParamIndex();
     const auto& info = control.getInfo();
     const bool armedHere = learn.getArmedParam() == index;
@@ -460,31 +460,31 @@ void PurpleTubaEditor::showControlMenu (LearnableControl& control)
                                         safeControl->grabKeyboardFocus();
                                 }
 
-                                auto* control = safeThis->getControl (index);
-                                if (control == nullptr)
+                                auto* target = safeThis->getControl (index);
+                                if (target == nullptr)
                                     return;
 
                                 switch (result)
                                 {
                                     case learnId:
-                                        if (safeThis->processor.getMidiLearn().getArmedParam() == index)
+                                        if (safeThis->tuba.getMidiLearn().getArmedParam() == index)
                                             safeThis->cancelLearn();
                                         else
-                                            safeThis->startLearn (*control);
+                                            safeThis->startLearn (*target);
                                         break;
 
                                     case clearId:
-                                        safeThis->processor.getMidiLearn().clearMappingForParam (index);
+                                        safeThis->tuba.getMidiLearn().clearMappingForParam (index);
                                         safeThis->refreshMappings();
                                         safeThis->announcements.enqueue ("MIDI mapping cleared for " + juce::String (paramInfo (index).name) + ".", 2);
                                         break;
 
                                     case enterId:
-                                        safeThis->promptForValue (*control);
+                                        safeThis->promptForValue (*target);
                                         break;
 
                                     case resetId:
-                                        control->resetToDefault();
+                                        target->resetToDefault();
                                         break;
 
                                     default:
@@ -523,7 +523,7 @@ void PurpleTubaEditor::setParameterFromText (int paramIndex, const juce::String&
         return;
     }
 
-    auto* param = processor.getParam (paramIndex);
+    auto* param = tuba.getParam (paramIndex);
     param->beginChangeGesture();
     param->setValueNotifyingHost (param->convertTo0to1 (*parsed));
     param->endChangeGesture();

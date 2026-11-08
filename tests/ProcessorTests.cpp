@@ -4,6 +4,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <algorithm>
 #include <vector>
 
 using namespace purpletuba;
@@ -35,11 +36,12 @@ namespace
             first = false;
 
             p.processBlock (buffer, midi);
-            for (int i = 0; i < blockSize; ++i)
-            {
-                out.push_back (buffer.getSample (0, i));
-                REQUIRE (buffer.getSample (1, i) == buffer.getSample (0, i));
-            }
+
+            // Channel 1 must be an exact copy of channel 0.
+            const auto* left = buffer.getReadPointer (0);
+            const auto* right = buffer.getReadPointer (1);
+            REQUIRE (std::equal (left, left + blockSize, right));
+            out.insert (out.end(), left, left + blockSize);
         }
         return out;
     }

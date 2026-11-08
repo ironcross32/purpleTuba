@@ -91,7 +91,7 @@ void PurpleTubaProcessor::applyControllerValue (int paramIndex, int controllerVa
 
     const auto& info = paramInfo (paramIndex);
     const float normalised = info.kind == ParamKind::toggle ? (controllerValue >= 64 ? 1.0f : 0.0f)
-                                                            : juce::jlimit (0, 127, controllerValue) / 127.0f;
+                                                            : (float) juce::jlimit (0, 127, controllerValue) / 127.0f;
 
     // JUCE's VST3 and CLAP wrappers queue parameter changes made on the audio thread.
     if (! juce::approximatelyEqual (param->getValue(), normalised))
@@ -132,7 +132,7 @@ void PurpleTubaProcessor::handleMidiMessage (const juce::MidiMessage& m)
     else if (m.isPitchWheel())
     {
         const int v = m.getPitchWheelValue() - 8192;
-        pitchBendNormalised = v >= 0 ? v / 8191.0f : v / 8192.0f;
+        pitchBendNormalised = v >= 0 ? (float) v / 8191.0f : (float) v / 8192.0f;
     }
     else if (m.isAllNotesOff() || m.isAllSoundOff())
     {
