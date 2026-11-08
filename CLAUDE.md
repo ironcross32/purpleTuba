@@ -16,7 +16,13 @@ cmake -G "Visual Studio 18 2026" -A x64 -S . -B build
 cmake --build build --config Debug --target PurpleTubaTests
 ctest --test-dir build -C Debug --output-on-failure
 cmake --build build --config Release --target PurpleTuba_VST3 PurpleTuba_CLAP PurpleTuba_Standalone
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\deploy.ps1   # always run after a successful VST3 build
 ```
+
+**After every successful VST3 build, run `scripts\deploy.ps1`** (add `-Config Debug` for a Debug
+build). It copies `Purple Tuba.vst3` into `C:\Program Files\Common Files\VST3`, and re-launches
+itself elevated if needed. The user approves the UAC prompt, so just run it and wait. A failure
+usually means a DAW has the plug-in loaded; tell the user rather than retrying.
 
 Sources are collected with `file(GLOB_RECURSE ... CONFIGURE_DEPENDS)`. The tests link the
 plug-in's shared-code static library and borrow its include paths and definitions

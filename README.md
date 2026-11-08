@@ -36,9 +36,18 @@ cmake --build build --config Release --target PurpleTuba_VST3 PurpleTuba_CLAP Pu
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-Build output goes to `build/PurpleTuba_artefacts/<Config>/{VST3,CLAP,Standalone}/`. Pass
-`-DPURPLETUBA_COPY_AFTER_BUILD=ON` to have the build copy the plug-ins into the system plug-in
-folders. On Windows that needs write access to `C:\Program Files\Common Files\VST3`.
+Build output goes to `build/PurpleTuba_artefacts/<Config>/{VST3,CLAP,Standalone}/`.
+
+On Windows, `scripts\deploy.ps1` copies the built VST3 into `C:\Program Files\Common Files\VST3`.
+It asks for administrator rights through UAC when it needs them.
+
+```powershell
+.\scripts\deploy.ps1                # Release build
+.\scripts\deploy.ps1 -Config Debug  # Debug build
+```
+
+Alternatively, configure with `-DPURPLETUBA_COPY_AFTER_BUILD=ON` to have the build copy the
+plug-ins into the system plug-in folders. That needs a build running with administrator rights.
 
 ## Playing it
 
