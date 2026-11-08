@@ -1,6 +1,6 @@
 # Purple Tuba
 
-A vocal tract synthesizer plug-in (VST3, CLAP and Standalone). It is built with JUCE and
+A vocal tract synthesizer plug-in (VST3, CLAP, Standalone, and AU on macOS). It is built with JUCE and
 based on Neil Thapen's [Pink Trombone](https://dood.al/pinktrombone/).
 
 Pink Trombone is played by dragging several fingers across a drawing of a mouth. Purple Tuba
@@ -28,7 +28,7 @@ cmake --build build --config Release --target PurpleTuba_VST3 PurpleTuba_CLAP Pu
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-macOS / Linux:
+macOS / Linux (on macOS, add `PurpleTuba_AU` to build the Audio Unit):
 
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release

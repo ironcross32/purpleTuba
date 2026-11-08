@@ -4,8 +4,9 @@ Guidance for working in this repository.
 
 ## Project
 
-Purple Tuba is a JUCE 9 vocal-tract synth plug-in: VST3, CLAP (via clap-juce-extensions) and
-Standalone. It ports Pink Trombone's DSP (MIT, Neil Thapen) and replaces its multi-touch canvas
+Purple Tuba is a JUCE 9 vocal-tract synth plug-in: VST3, CLAP (via clap-juce-extensions),
+Standalone, and AU on macOS only. The Mac build has only ever been tested in CI
+(`.github/workflows/build.yml`: universal binary, ad-hoc signed, `auval`). It ports Pink Trombone's DSP (MIT, Neil Thapen) and replaces its multi-touch canvas
 with grouped, screen-reader-accessible, MIDI-learnable controls. Submodules live in `libs/`
 (JUCE pinned to 9.0.5, clap-juce-extensions, Catch2). License: AGPL-3.0.
 

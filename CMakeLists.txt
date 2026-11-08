@@ -19,6 +19,11 @@ endif()
 
 add_subdirectory(libs/JUCE)
 
+set(PURPLETUBA_FORMATS VST3 Standalone)
+if (APPLE)
+    list(APPEND PURPLETUBA_FORMATS AU)
+endif()
+
 juce_add_plugin(PurpleTuba
     COMPANY_NAME "Purple Tuba"
     PRODUCT_NAME "Purple Tuba"
@@ -31,8 +36,9 @@ juce_add_plugin(PurpleTuba
     IS_MIDI_EFFECT FALSE
     EDITOR_WANTS_KEYBOARD_FOCUS TRUE
     VST3_CATEGORIES Instrument Synth Mono
+    AU_MAIN_TYPE kAudioUnitType_MusicDevice
     COPY_PLUGIN_AFTER_BUILD ${PURPLETUBA_COPY_AFTER_BUILD}
-    FORMATS VST3 Standalone)
+    FORMATS ${PURPLETUBA_FORMATS})
 
 file(GLOB_RECURSE PURPLETUBA_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h"
